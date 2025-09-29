@@ -1,8 +1,19 @@
 import com.google.devtools.ksp.configureKtlint
 import com.google.devtools.ksp.configureKtlintApplyToIdea
+import com.gradleup.librarian.gradle.Librarian
+import nmcp.NmcpAggregationExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
+buildscript {
+    dependencies {
+        classpath("com.gradleup.librarian:com.gradleup.librarian.gradle.plugin:0.2.0") {
+            exclude(group = "org.jetbrains.dokka")
+            exclude(group = "org.jetbrains.kotlinx", module = "binary-compatibility-validator")
+        }
+    }
+}
 
 val sonatypeUserName: String? by project
 val sonatypePassword: String? by project
@@ -128,3 +139,12 @@ subprojects {
         isReproducibleFileOrder = true
     }
 }
+
+
+Librarian.registerGcsTask(
+    project = project,
+    provider { "apollo-previews" },
+    provider { "m2/" },
+    provider { System.getenv("GOOGLE_SERVICES_JSON") },
+    nmcpAggregation.allFiles
+)
